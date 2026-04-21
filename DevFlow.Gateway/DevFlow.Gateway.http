@@ -1,0 +1,6 @@
+@DevFlow.Gateway_HostAddress = http://localhost:5050
+
+GET {{DevFlow.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
