@@ -4,14 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevFlow.Shared.Kernel
+namespace DevFlow.Shared.Kernel.Entities
 {
-    public class BaseEntity
+    public abstract class DomainEvent
     {
         public int Id { get; set; }
-
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime UpdatedAt { get; set; }
+        public DateTime OccurredAt { get; set; } = DateTime.UtcNow;
     }
 }

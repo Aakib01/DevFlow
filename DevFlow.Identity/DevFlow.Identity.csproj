@@ -12,4 +12,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DevFlow.Shared.Kernel\DevFlow.Shared.Kernel.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DevFlow.Shared.Kernel.Results;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DevFlow.Identity.Controllers
 {
@@ -9,7 +10,7 @@ namespace DevFlow.Identity.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok("Service is running");
+            return Ok(Result<string>.Success("Working"));
         }
     }
 }
