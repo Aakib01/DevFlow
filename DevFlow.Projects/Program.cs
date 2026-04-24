@@ -1,7 +1,21 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using DevFlow.Projects.Infrastructure.Data;
+using DevFlow.Shared.Kernel;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
+
+
+var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services
 builder.Services.AddControllers();
+
+//Add TenantContext
+builder.Services.AddScoped<ITenantContext,TenantContext>();
+
+//Add DB Context
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ✅ Add Swagger
 builder.Services.AddEndpointsApiExplorer();
