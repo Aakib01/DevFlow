@@ -13,9 +13,9 @@ namespace DevFlow.Identity.Controllers
     {
         private readonly IdentityDbContext _db;
         private readonly JwtService _jwt;
-        private readonly IAuthProcessor _authProcessor;
+        private readonly IIdentityProcessor _authProcessor;
 
-        public AuthController(IdentityDbContext db, JwtService jwt, IAuthProcessor authProcessor)
+        public AuthController(IdentityDbContext db, JwtService jwt, IIdentityProcessor authProcessor)
         {
             _db = db;
             _jwt = jwt;

@@ -7,7 +7,7 @@ namespace DevFlow.Identity.Repository
     public class AuthRepository
     {
         IdentityDbContext _db;
-        public AuthRepository(IdentityDbContext db) 
+        public AuthRepository(IdentityDbContext db)
         {
             _db = db;
         }
@@ -20,7 +20,7 @@ namespace DevFlow.Identity.Repository
         }
 
         public async Task<bool> RegisterUser(User user)
-        {          
+        {
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
             return true;
@@ -39,6 +39,26 @@ namespace DevFlow.Identity.Repository
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync();
             return tenant != null ? tenant.Id + 1 : 1;
+        }
+
+        public async Task<WorkspaceMember> GetWorkspaceMemeberId(int userId, int workspaceId)
+        {
+            var member = await _db.WorkspaceMembers
+                .FirstOrDefaultAsync(x => x.UserId == userId && x.WorkspaceId == workspaceId);
+            return member;
+        }
+
+        internal async Task<bool> AddWorkspaceMember(WorkspaceMember member)
+        {
+            _db.WorkspaceMembers.Add(member);
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+        internal void CreateWorkspace(Workspace workspace)
+        {
+            _db.Workspaces.Add(workspace);
+            _db.SaveChanges();
         }
     }
 }
