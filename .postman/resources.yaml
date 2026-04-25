@@ -1,0 +1,10 @@
+# Use this workspace to collaborate
+workspace:
+  id: 20fcfd8e-309c-4c8b-8b55-952509f02cdb
+
+localResources:
+  specs:
+    - ..\DevFlow.Identity\obj\Debug\net9.0\EndpointInfo\DevFlow.Identity.json
+    - ..\DevFlow.Notifications\obj\Debug\net9.0\EndpointInfo\DevFlow.Notifications.json
+    - ..\DevFlow.Gateway\obj\Debug\net9.0\EndpointInfo\DevFlow.Gateway.json
+    - ..\DevFlow.Projects\obj\Debug\net9.0\EndpointInfo\DevFlow.Projects.json

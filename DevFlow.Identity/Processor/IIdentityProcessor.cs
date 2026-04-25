@@ -16,8 +16,6 @@ namespace DevFlow.Identity.Processor
         public Task<bool> AddWorkspaceMember(int userId, int workspaceId, string role);
 
         public Task<bool> CreateWorkspace(string name, int tenantId, int userId);
-
-
-
+        public Task<WorkspaceMember> GetMemberById(int memberId);
     }
 }

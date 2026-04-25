@@ -1,5 +1,5 @@
 ﻿using DevFlow.Projects.Infrastructure.Data;
-using DevFlow.Shared.Kernel;
+using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 

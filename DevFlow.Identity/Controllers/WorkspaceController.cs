@@ -41,5 +41,16 @@ namespace DevFlow.Identity.Controllers
             
             return Ok();
         }
+
+        [HttpPost("{workspaceId}/{memberId}")]
+        public async Task<IActionResult> GetMemberById(int workspaceId, int memberId)
+        {
+
+            var result = await _authProcessor.GetMemberById(memberId);
+
+            return Ok(result);
+        }
+
+
     }
 }

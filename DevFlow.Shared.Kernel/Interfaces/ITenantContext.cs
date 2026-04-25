@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DevFlow.Shared.Kernel
+namespace DevFlow.Shared.Kernel.Interfaces
 {
     public interface ITenantContext
     {
-        public int TenantId { get; }
+        public int TenantId { get; set; }
     }
 }

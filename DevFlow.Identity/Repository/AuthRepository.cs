@@ -55,10 +55,15 @@ namespace DevFlow.Identity.Repository
             return true;
         }
 
-        internal void CreateWorkspace(Workspace workspace)
+        public void CreateWorkspace(Workspace workspace)
         {
             _db.Workspaces.Add(workspace);
             _db.SaveChanges();
+        }
+
+        public async Task<WorkspaceMember> GetMemberById(int memberId)
+        {
+            return await _db.WorkspaceMembers.Where(x => x.Id == memberId).FirstOrDefaultAsync();
         }
     }
 }

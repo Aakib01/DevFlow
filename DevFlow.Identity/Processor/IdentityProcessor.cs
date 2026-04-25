@@ -110,5 +110,10 @@ namespace DevFlow.Identity.Processor
             _authRepository.AddWorkspaceMember(admin);
             return Task.FromResult(true);
         }
+
+        Task<WorkspaceMember> IIdentityProcessor.GetMemberById(int memberId)
+        {
+            return _authRepository.GetMemberById(memberId);
+        }
     }
 }

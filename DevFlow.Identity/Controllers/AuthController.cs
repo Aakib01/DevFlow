@@ -2,6 +2,7 @@
 using DevFlow.Identity.Infrastructure.Data;
 using DevFlow.Identity.Processor;
 using DevFlow.Identity.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

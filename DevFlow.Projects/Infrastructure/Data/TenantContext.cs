@@ -1,4 +1,4 @@
-using DevFlow.Shared.Kernel;
+using DevFlow.Shared.Kernel.Interfaces;
 
 namespace DevFlow.Projects.Infrastructure.Data
 {
