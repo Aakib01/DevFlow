@@ -1,5 +1,6 @@
 ﻿using DevFlow.Projects.Entities;
 using DevFlow.Projects.Infrastructure.Data;
+using DevFlow.Projects.Services;
 using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,11 +15,13 @@ namespace DevFlow.Projects.Controllers
     {
         private readonly AppDbContext _db;
         private readonly ITenantContext _tenant;
+        private readonly WorkflowService _workflowService;
 
-        public TicketController(AppDbContext db, ITenantContext tenantContext)
+        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService)
         {
             _db = db;
             _tenant = tenantContext;
+            _workflowService = workflowService;
         }
 
         [HttpPost]
@@ -45,6 +48,30 @@ namespace DevFlow.Projects.Controllers
                 .ToListAsync();
 
             return Ok(result);
+        }
+
+        [HttpPost("{id}/transition")]
+        public async Task<IActionResult> Transition(int id, int toStateId)
+        {
+            var role = User.FindFirst("role")?.Value ?? "Member";
+
+            var success = await _workflowService.Transition(id, toStateId, role);
+
+            if (!success)
+                return BadRequest("Invalid transition");
+
+            return Ok();
+        }
+
+        [HttpGet("{id}/transitions")]
+        public async Task<IActionResult> GetTransitions(int id)
+        {
+            var role = User.FindFirst("role")?.Value ?? "Member";
+
+            var transitions = await _workflowService
+                .GetAvailableTransitions(id, role);
+
+            return Ok(transitions);
         }
     }
 }

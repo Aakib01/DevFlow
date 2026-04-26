@@ -1,5 +1,6 @@
 ﻿using DevFlow.Projects.Infrastructure.Data;
 using DevFlow.Projects.Middleware;
+using DevFlow.Projects.Services;
 using DevFlow.Shared.Kernel;
 using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,6 +17,7 @@ builder.Services.AddControllers();
 
 // ✅ Add TenantContext
 builder.Services.AddScoped<ITenantContext, TenantContext>();
+builder.Services.AddScoped<WorkflowService>();
 
 // Add DB Context
 builder.Services.AddDbContext<AppDbContext>(options =>

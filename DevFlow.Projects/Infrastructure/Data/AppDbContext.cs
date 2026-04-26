@@ -22,6 +22,8 @@ namespace DevFlow.Projects.Infrastructure.Data
 
         public DbSet<Project> Projects => Set<Project>();
         public DbSet<Ticket> Tickets => Set<Ticket>();
+        public DbSet<WorkflowState> WorkflowStates => Set<WorkflowState>();
+        public DbSet<WorkflowTransition> WorkflowTransitions => Set<WorkflowTransition>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
