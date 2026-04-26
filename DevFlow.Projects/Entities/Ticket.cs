@@ -1,11 +1,12 @@
-﻿using DevFlow.Shared.Kernel;
+﻿using DevFlow.Shared.Kernel.Entities;
 
 namespace DevFlow.Projects.Entities
 {
     public class Ticket : TenantedEntity
     {
-        public int Id { get; set; }
+        public int ProjectId { get; set; }
         public string Title { get; set; } = string.Empty;
-        public string CurrentState { get; set; } = "Backlog";
+        public string State { get; set; } = "Backlog";
+        public int AssignedUserId { get; set; }
     }
 }

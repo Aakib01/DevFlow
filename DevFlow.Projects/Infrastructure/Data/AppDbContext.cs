@@ -1,5 +1,5 @@
 ﻿using DevFlow.Projects.Entities;
-using DevFlow.Shared.Kernel;
+using DevFlow.Shared.Kernel.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -39,9 +39,11 @@ namespace DevFlow.Projects.Infrastructure.Data
         {
             var parameter = Expression.Parameter(type, "e");
             var property = Expression.Property(parameter, "TenantId");
-            var tenantId = Expression.Constant(_tenantContext.TenantId);
+            var tenantIdProperty = Expression.Property(
+                Expression.Constant(_tenantContext),
+                typeof(ITenantContext).GetProperty(nameof(ITenantContext.TenantId))!);
 
-            var body = Expression.Equal(property, tenantId);
+            var body = Expression.Equal(property, tenantIdProperty);
             return Expression.Lambda(body, parameter);
         }
     }

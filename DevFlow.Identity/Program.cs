@@ -1,7 +1,11 @@
 ﻿using DevFlow.Identity.Infrastructure.Data;
+using DevFlow.Identity.Middleware;
 using DevFlow.Identity.Processor;
 using DevFlow.Identity.Repository;
 using DevFlow.Identity.Services;
+using DevFlow.Projects.Infrastructure.Data;
+using DevFlow.Shared.Kernel;
+using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +21,10 @@ builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<JwtService>();
+
+// ✅ Add TenantContext
+builder.Services.AddScoped<ITenantContext, TenantContext>();
+
 builder.Services.AddDbContext<IdentityDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -84,6 +92,7 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.UseCors("AllowAll");
 app.UseAuthentication();
+app.UseMiddleware<TenantMiddleware>();  // ✅ Add TenantMiddleware AFTER authentication
 app.UseAuthorization();
 
 app.MapControllers();
