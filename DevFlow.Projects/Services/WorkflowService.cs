@@ -36,12 +36,14 @@ namespace DevFlow.Projects.Services
             return nextStates;
         }
 
-        public async Task<bool> Transition(int ticketId, int toStateId, string userRole)
+        public async Task<(bool success, string? fromState, string? toState)> Transition(int ticketId, int toStateId, string userRole)
         {
             var ticket = await _db.Tickets.FindAsync(ticketId);
 
             var currentState = await _db.WorkflowStates
                 .FirstAsync(x => x.Name == ticket.State);
+
+            var newState = await _db.WorkflowStates.FindAsync(toStateId);
 
             var valid = await _db.WorkflowTransitions.AnyAsync(t =>
                 t.FromStateId == currentState.Id &&
@@ -50,15 +52,16 @@ namespace DevFlow.Projects.Services
             );
 
             if (!valid)
-                return false;
+                return (false, null, null);
 
-            var newState = await _db.WorkflowStates.FindAsync(toStateId);
+            var oldStateName = currentState.Name;
+            var newStateName = newState.Name;
 
-            ticket.State = newState.Name;
+            ticket.State = newStateName;
 
             await _db.SaveChangesAsync();
 
-            return true;
+            return (true, oldStateName, newStateName);
         }
 
     }

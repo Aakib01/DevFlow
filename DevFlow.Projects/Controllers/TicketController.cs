@@ -16,12 +16,14 @@ namespace DevFlow.Projects.Controllers
         private readonly AppDbContext _db;
         private readonly ITenantContext _tenant;
         private readonly WorkflowService _workflowService;
+        private readonly EventService _eventService;
 
-        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService)
+        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService, EventService eventService)
         {
             _db = db;
             _tenant = tenantContext;
             _workflowService = workflowService;
+            _eventService = eventService;
         }
 
         [HttpPost]
@@ -30,6 +32,10 @@ namespace DevFlow.Projects.Controllers
             ticket.TenantId = _tenant.TenantId;
             _db.Tickets.Add(ticket);
             await _db.SaveChangesAsync();
+
+            await _eventService.LogEvent(_tenant.TenantId,ticket.Id,"TicketCreated",
+                new { ticket.Title },int.Parse(User.FindFirst("sub")?.Value ?? "0")
+);
 
             return Ok(ticket);
         }
@@ -55,11 +61,13 @@ namespace DevFlow.Projects.Controllers
         {
             var role = User.FindFirst("role")?.Value ?? "Member";
 
-            var success = await _workflowService.Transition(id, toStateId, role);
+            var result = await _workflowService.Transition(id, toStateId, role);
 
-            if (!success)
+            if (!result.success)
                 return BadRequest("Invalid transition");
 
+            await _eventService.LogEvent(_tenant.TenantId, id,"StatusChanged",
+                new { From = result.fromState, To = result.toState }, int.Parse(User.FindFirst("sub")?.Value ?? "0"));
             return Ok();
         }
 
@@ -72,6 +80,17 @@ namespace DevFlow.Projects.Controllers
                 .GetAvailableTransitions(id, role);
 
             return Ok(transitions);
+        }
+
+        [HttpGet("{id}/activity")]
+        public async Task<IActionResult> GetActivity(int id)
+        {
+            var events = await _db.TicketEvents
+                .Where(e => e.TicketId == id)
+                .OrderBy(e => e.OccurredAt)
+                .ToListAsync();
+
+            return Ok(events);
         }
     }
 }

@@ -18,6 +18,7 @@ builder.Services.AddControllers();
 // ✅ Add TenantContext
 builder.Services.AddScoped<ITenantContext, TenantContext>();
 builder.Services.AddScoped<WorkflowService>();
+builder.Services.AddScoped<EventService>();
 
 // Add DB Context
 builder.Services.AddDbContext<AppDbContext>(options =>
