@@ -5,6 +5,8 @@ using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using System.Net.Sockets;
 
 namespace DevFlow.Projects.Controllers
 {
@@ -17,13 +19,15 @@ namespace DevFlow.Projects.Controllers
         private readonly ITenantContext _tenant;
         private readonly WorkflowService _workflowService;
         private readonly EventService _eventService;
+        private readonly CacheService _cache;
 
-        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService, EventService eventService)
+        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService, EventService eventService, CacheService cacheService)
         {
             _db = db;
             _tenant = tenantContext;
             _workflowService = workflowService;
             _eventService = eventService;
+            _cache = cacheService;
         }
 
         [HttpPost]
@@ -34,8 +38,28 @@ namespace DevFlow.Projects.Controllers
             await _db.SaveChangesAsync();
 
             await _eventService.LogEvent(_tenant.TenantId,ticket.Id,"TicketCreated",
-                new { ticket.Title },int.Parse(User.FindFirst("sub")?.Value ?? "0")
-);
+                new { ticket.Title },int.Parse(User.FindFirst("sub")?.Value ?? "0"));
+
+            return Ok(ticket);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var cacheKey = $"tenant:{_tenant.TenantId}:ticket:{id}";
+
+            var cached = await _cache.GetAsync<Ticket>(cacheKey);
+
+            if (cached != null)
+                return Ok(cached);
+
+            var ticket = await _db.Tickets
+                .FirstOrDefaultAsync(t => t.Id == id && t.TenantId == _tenant.TenantId);
+
+            if (ticket == null)
+                return NotFound();
+
+            await _cache.SetAsync(cacheKey, ticket);
 
             return Ok(ticket);
         }
@@ -56,6 +80,65 @@ namespace DevFlow.Projects.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, Ticket updatedTicket)
+        {
+            var cacheKey = $"tenant:{_tenant.TenantId}:ticket:{id}";
+
+            var ticket = await _db.Tickets
+                .FirstOrDefaultAsync(t => t.Id == id && t.TenantId == _tenant.TenantId);
+
+            if (ticket == null)
+                return NotFound();
+
+            // Update fields
+            ticket.ProjectId = updatedTicket.ProjectId;
+            ticket.Title = updatedTicket.Title;
+            ticket.AssignedUserId = updatedTicket.AssignedUserId;
+            ticket.State = updatedTicket.State;
+
+            await _db.SaveChangesAsync();
+
+            await _eventService.LogEvent(
+                _tenant.TenantId,
+                ticket.Id,
+                "TicketUpdated",
+                new { ticket.Title },
+                int.Parse(User.FindFirst("sub")?.Value ?? "0")
+            );
+
+            await _cache.SetAsync(cacheKey, ticket);
+
+            return Ok(ticket);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var cacheKey = $"tenant:{_tenant.TenantId}:ticket:{id}";
+
+            var ticket = await _db.Tickets
+                .FirstOrDefaultAsync(t => t.Id == id && t.TenantId == _tenant.TenantId);
+
+            if (ticket == null)
+                return NotFound();
+
+            _db.Tickets.Remove(ticket);
+            await _db.SaveChangesAsync();
+
+            await _eventService.LogEvent(
+                _tenant.TenantId,
+                id,
+                "TicketDeleted",
+                null,
+                int.Parse(User.FindFirst("sub")?.Value ?? "0")
+            );
+
+            await _cache.DeleteAsync(cacheKey);
+
+            return NoContent();
+        }
+
         [HttpPost("{id}/transition")]
         public async Task<IActionResult> Transition(int id, int toStateId)
         {
@@ -68,13 +151,14 @@ namespace DevFlow.Projects.Controllers
 
             await _eventService.LogEvent(_tenant.TenantId, id,"StatusChanged",
                 new { From = result.fromState, To = result.toState }, int.Parse(User.FindFirst("sub")?.Value ?? "0"));
+
             return Ok();
         }
 
         [HttpGet("{id}/transitions")]
         public async Task<IActionResult> GetTransitions(int id)
         {
-            var role = User.FindFirst("role")?.Value ?? "Member";
+            var role = User.FindFirst("role")?.Value ?? "Member";          
 
             var transitions = await _workflowService
                 .GetAvailableTransitions(id, role);
