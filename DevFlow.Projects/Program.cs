@@ -1,4 +1,5 @@
-﻿using DevFlow.Projects.Infrastructure.Data;
+﻿using DevFlow.Projects.Background;
+using DevFlow.Projects.Infrastructure.Data;
 using DevFlow.Projects.Middleware;
 using DevFlow.Projects.Services;
 using DevFlow.Shared.Kernel;
@@ -6,8 +7,8 @@ using DevFlow.Shared.Kernel.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using StackExchange.Redis;
+using System.Text;
 
 
 
@@ -28,6 +29,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
     ConnectionMultiplexer.Connect(builder.Configuration["Redis:Connection"])
 );
 builder.Services.AddScoped<CacheService>();
+builder.Services.AddHostedService<TicketEventConsumer>();
+builder.Services.AddSingleton<EventPublisher>();
 
 
 // Add DB Context

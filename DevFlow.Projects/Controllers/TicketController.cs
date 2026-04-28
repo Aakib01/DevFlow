@@ -20,14 +20,17 @@ namespace DevFlow.Projects.Controllers
         private readonly WorkflowService _workflowService;
         private readonly EventService _eventService;
         private readonly CacheService _cache;
+        private readonly EventPublisher _eventPublisher;
 
-        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService, EventService eventService, CacheService cacheService)
+        public TicketController(AppDbContext db, ITenantContext tenantContext, WorkflowService workflowService,
+            EventService eventService, CacheService cacheService, EventPublisher eventPublisher)
         {
             _db = db;
             _tenant = tenantContext;
             _workflowService = workflowService;
             _eventService = eventService;
             _cache = cacheService;
+            _eventPublisher = eventPublisher;
         }
 
         [HttpPost]
@@ -39,6 +42,7 @@ namespace DevFlow.Projects.Controllers
 
             await _eventService.LogEvent(_tenant.TenantId,ticket.Id,"TicketCreated",
                 new { ticket.Title },int.Parse(User.FindFirst("sub")?.Value ?? "0"));
+        
 
             return Ok(ticket);
         }
@@ -91,6 +95,15 @@ namespace DevFlow.Projects.Controllers
             if (ticket == null)
                 return NotFound();
 
+            await _eventPublisher.PublishAsync("ticket-events", new
+            {
+                TicketId = ticket.Id,
+                Event = "StatusChanged",
+                From = ticket,
+                To = updatedTicket
+            });
+
+
             // Update fields
             ticket.ProjectId = updatedTicket.ProjectId;
             ticket.Title = updatedTicket.Title;
@@ -107,6 +120,7 @@ namespace DevFlow.Projects.Controllers
                 int.Parse(User.FindFirst("sub")?.Value ?? "0")
             );
 
+            
             await _cache.SetAsync(cacheKey, ticket);
 
             return Ok(ticket);
